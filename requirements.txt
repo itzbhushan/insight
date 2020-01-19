@@ -1,0 +1,2 @@
+black  # Uncompromising code formatter: https://github.com/psf/black
+pre-commit  # Framework for multi langugage precommit hooks: https://pre-commit.com
