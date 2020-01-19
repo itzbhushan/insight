@@ -1,2 +1,8 @@
+# keep dependencies sorted alphabetically.
+
 black  # Uncompromising code formatter: https://github.com/psf/black
+
+flask
+flask-socketio  # flask/socket-io integration for web-server
+
 pre-commit  # Framework for multi langugage precommit hooks: https://pre-commit.com
