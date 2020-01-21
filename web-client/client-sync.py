@@ -1,8 +1,13 @@
+#!/usr/bin/env python
+
 from time import sleep
 import socketio
 
-url = "http://ec2-35-161-161-253.us-west-2.compute.amazonaws.com:8000"
+url = "http://ec2-54-202-236-123.us-west-2.compute.amazonaws.com:8000"
 sio = socketio.Client()
+
+out_event = "get-suggestions"
+in_event = "suggestions-list"
 
 
 @sio.event
@@ -24,25 +29,17 @@ sio.connect(url)
 print("My id:", sio.sid)
 
 
-@sio.event
-def message(data):
+@sio.on(in_event)
+def handle_suggestions(data):
     """
-    Handler for messages sent by the server to the "message" event.
+    Handler for messages sent by the server to the "suggestion list" event.
     """
-    print("Event name: message. Message from server:", data)
+    print("Event name: suggestion list. Message from server:", data)
 
 
-@sio.on("my response")
-def handle_response(data):
-    """
-    Handler for messages sent by the server to the "my response" event.
-    """
-    print("Event name: my response. Message from server:", data)
-
-
-for i in range(1):
-    sio.emit("message", "Hello server" + str(i))
+while True:
+    message = input("-->")
+    sio.emit(out_event, message)
     # sio.emit("my event", "Hello my event in server" + str(i))
-    sleep(0.2)
 
 sio.disconnect()
