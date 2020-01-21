@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import json
-import threading
 
-from flask import Flask, render_template
+import json
+from threading import Thread
+
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, send
 
 from pulsar import Client
@@ -12,12 +13,15 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app)
 
+in_event = "get-suggestions"
+out_event = "suggestions-list"
+
 pulsar_broker_url = "pulsar://ec2-54-212-169-175.us-west-2.compute.amazonaws.com:6650"
-topic = "suggest-topic"
+out_topic = "suggest-topic"
+in_topic = "suggestions-topic"
 
 client = Client(pulsar_broker_url)
-producer = client.create_producer(topic)
-consumer_out = open("consume.txt", "a")
+producer = client.create_producer(out_topic)
 
 
 @app.route("/")
@@ -28,54 +32,52 @@ def index():
     return "Hello world!"
 
 
-@socketio.on("message")
-def handle_message(data):
+@socketio.on(in_event)
+def get_suggestions(data):
     """
-    message - event handler.
+    _get suggestions_ event handler.
 
-    This function is called when client sends messages to the
-    message event.
+    This function is called when clients send message to the
+    get suggestions event.
     """
+    packet = {"text": data + "Hello client", "room": request.sid}
+    print(
+        f"Event name: get suggestions. Message from client is {data} from {request.sid}"
+    )
+    producer.send(json.dumps(packet).encode("utf-8"))
+    # send("Hello client")
 
-    print("Event name: message. Message from client:", data)
-    # send message to pulsar broker
-    producer.send(data.encode("utf-8"))
-    # Return message back to client. We can later figure out
-    # how to send message to client via the pulsar consumer.
-    send(data + "Hello client, this is server")
 
-
-def consumer_thread(client):
+def consumer_thread(client, in_topic):
     """
     Pulsar consumer thread.
 
-    Eventually the consumer will be a separate application, but for
-    now we simulate consumers using this thread. In the next iteration,
-    we will send messages back to the client via this consumer. For
-    now, all consumed messages are written to a text file (consume.txt)
+    This web-server thread consumes messages from the given topic and emits
+    a list of suggestions back to the client.
     """
-
     consumer = client.subscribe(
-        topic, "test-subscription", consumer_type=ConsumerType.Shared
+        in_topic, "test-subscription", consumer_type=ConsumerType.Shared
     )
 
     while True:
         msg = consumer.receive()
-        data = msg.data().decode("utf-8")
-        msg_id = msg.message_id()
-        print(f"Received message {data}, id={msg_id}", file=consumer_out)
-        # emit("my response", {"data": data})
         consumer.acknowledge(msg)
+        msg_id = msg.message_id()
+        data = msg.data().decode("utf-8")
+        packet = json.loads(data)
+        print(
+            f"Web-server: Received message {packet['text']}, id={msg_id}, room={packet['room']}"
+        )
+        with app.test_request_context("/"):
+            socketio.emit(out_event, {"data": packet["room"]}, room=packet["room"])
 
 
 if __name__ == "__main__":
-    consumer_thread = threading.Thread(
-        target=consumer_thread, args=(client,), daemon=True
+    consumer_thread = Thread(
+        target=consumer_thread, args=(client, in_topic), daemon=True
     )
     consumer_thread.start()
     socketio.run(app, host="0.0.0.0", port=8000, debug=True)
     print("Closing server connection")
     client.close()
     print("Closing pulsar client")
-    consumer_out.close()
-    print("closing file")
