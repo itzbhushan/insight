@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import json
-from threading import Thread
+from threading import Lock
 
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, send
@@ -11,7 +11,8 @@ from pulsar import ConsumerType
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode="threading")
+# socketio = SocketIO(app, async_mode="eventlet")
 
 in_event = "get-suggestions"
 out_event = "suggestions-list"
@@ -23,13 +24,8 @@ in_topic = "suggestions-topic"
 client = Client(pulsar_broker_url)
 producer = client.create_producer(out_topic)
 
-
-@app.route("/")
-def index():
-    """
-    Default route.
-    """
-    return "Hello world!"
+thread = None
+thread_lock = Lock()
 
 
 @socketio.on(in_event)
@@ -40,12 +36,11 @@ def get_suggestions(data):
     This function is called when clients send message to the
     get suggestions event.
     """
-    packet = {"text": data + "Hello client", "room": request.sid}
+    packet = {"text": data, "room": request.sid}
     print(
         f"Event name: get suggestions. Message from client is {data} from {request.sid}"
     )
     producer.send(json.dumps(packet).encode("utf-8"))
-    # send("Hello client")
 
 
 def consumer_thread(client, in_topic):
@@ -68,16 +63,19 @@ def consumer_thread(client, in_topic):
         print(
             f"Web-server: Received message {packet['text']}, id={msg_id}, room={packet['room']}"
         )
-        with app.test_request_context("/"):
-            socketio.emit(out_event, {"data": packet["room"]}, room=packet["room"])
+        socketio.emit(out_event, packet, room=packet["room"])
+
+
+@socketio.on("connect")
+def test_connect():
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(consumer_thread, client, in_topic)
 
 
 if __name__ == "__main__":
-    consumer_thread = Thread(
-        target=consumer_thread, args=(client, in_topic), daemon=True
-    )
-    consumer_thread.start()
-    socketio.run(app, host="0.0.0.0", port=8000, debug=True)
+    socketio.run(app, host="0.0.0.0", debug=True)
     print("Closing server connection")
     client.close()
     print("Closing pulsar client")
