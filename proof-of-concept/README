@@ -1,0 +1,2 @@
+count_submission.py returns [['AskReddit', 266230], ['RocketLeagueExchange', 219164], ['The_Donald', 196901], ['AutoNewspaper', 164002], ['GlobalOffensiveTrade', 119562], ['videos', 76393], ['Showerthoughts', 75787], ['news', 75029], ['funny', 71131], ['Overwatch', 53889]] as the top 10 entries, when limited to 100M lines.
+
