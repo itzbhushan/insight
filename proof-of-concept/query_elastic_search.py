@@ -8,6 +8,18 @@ import os
 from elasticsearch import Elasticsearch
 
 
+def search(es, index, query):
+    response = es.search(index=index, body=query)
+    print(
+        f"Found {response['hits']['total']['value']} matches. Took {response['took']} ms."
+    )
+    for result in response["hits"]["hits"]:
+        print(
+            "Title: {}, score: {}".format(result["_source"]["title"], result["_score"])
+        )
+    return response
+
+
 def main():
     parser = ArgumentParser("Query elastic search.")
     parser.add_argument("subreddit", type=str.lower, help="Subreddit name.")
@@ -18,13 +30,21 @@ def main():
 
     index = "-".join([args.subreddit, "submissions"])
     # total, docs = clio_search(es_url, index=index, query="shotgun")
-    search_query = {"query": {"match": {"title": args.text}}}
-    response = es.search(index=index, body=search_query)
-    print("Found {} matches".format(len(response["hits"]["hits"])))
-    for result in response["hits"]["hits"]:
-        print(
-            "Title: {}, score: {}".format(result["_source"]["title"], result["_score"])
-        )
+    limit = 5
+    query = {"query": {"match": {"title": args.text}}, "size": limit}
+    _ = search(es, index, query)
+
+    query = {
+        "query": {
+            "more_like_this": {
+                "fields": ["title"],
+                "like": args.text,
+                "min_term_freq": 1,
+                "max_query_terms": 20,
+            }
+        }
+    }
+    response = search(es, index, query)
 
 
 if __name__ == "__main__":
