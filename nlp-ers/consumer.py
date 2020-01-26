@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import os
 
 from pulsar import Client
 from pulsar import ConsumerType
@@ -32,9 +33,7 @@ def find_suggestions(in_topic, out_topic, client):
 
 
 if __name__ == "__main__":
-    pulsar_broker_url = (
-        "pulsar://ec2-54-212-169-175.us-west-2.compute.amazonaws.com:6650"
-    )
+    pulsar_broker_url = os.getenv("PULSAR_BROKER_URL")
     client = Client(pulsar_broker_url)
     in_topic = "suggest-topic"
     out_topic = "suggestions-topic"
