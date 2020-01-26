@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import os
 from threading import Lock
 
 from flask import Flask, render_template, request
@@ -17,7 +18,7 @@ socketio = SocketIO(app, async_mode="threading")
 in_event = "get-suggestions"
 out_event = "suggestions-list"
 
-pulsar_broker_url = "pulsar://ec2-54-212-169-175.us-west-2.compute.amazonaws.com:6650"
+pulsar_broker_url = os.getenv("PULSAR_BROKER_URL")
 out_topic = "suggest-topic"
 in_topic = "suggestions-topic"
 
