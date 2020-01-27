@@ -28,7 +28,7 @@ def extract_documents(subreddit, file_path, index, columns):
                 continue
 
             doc = {"_index": index, "_id": l_json["id"]}
-            doc["_source"] = {k: l_json.get(k) for k in columns}
+            doc.update({k: l_json.get(k) for k in columns})
             yield doc
 
 
