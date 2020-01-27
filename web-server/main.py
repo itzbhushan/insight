@@ -2,6 +2,7 @@
 
 import json
 import os
+import logging
 from threading import Lock
 
 from flask import Flask, render_template, request
@@ -28,6 +29,8 @@ producer = client.create_producer(out_topic)
 thread = None
 thread_lock = Lock()
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 @socketio.on(in_event)
 def get_suggestions(data):
@@ -37,11 +40,10 @@ def get_suggestions(data):
     This function is called when clients send message to the
     get suggestions event.
     """
-    packet = {"text": data, "room": request.sid}
-    print(
-        f"Event name: get suggestions. Message from client is {data} from {request.sid}"
-    )
-    producer.send(json.dumps(packet).encode("utf-8"))
+    data_dict = json.loads(data.decode("utf-8"))
+    data_dict["room"] = request.sid
+    logging.debug(f"Message from client {request.sid} is {data_dict}")
+    producer.send(json.dumps(data_dict).encode("utf-8"))
 
 
 def consumer_thread(client, in_topic):
@@ -61,7 +63,7 @@ def consumer_thread(client, in_topic):
         msg_id = msg.message_id()
         data = msg.data().decode("utf-8")
         packet = json.loads(data)
-        print(
+        logging.debug(
             f"Web-server: Received message {packet['text']}, id={msg_id}, room={packet['room']}"
         )
         socketio.emit(out_event, packet, room=packet["room"])
