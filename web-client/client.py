@@ -1,13 +1,20 @@
 #!/usr/bin/env python
+
+from datetime import datetime
+import json
+import logging
+import os
 import sys
 from time import sleep
 import socketio
 
-url = "http://ec2-54-202-236-123.us-west-2.compute.amazonaws.com:5000"
+url = os.getenv("WEB_SERVER")
 sio = socketio.Client()
 
 out_event = "get-suggestions"
 in_event = "suggestions-list"
+
+logging.basicConfig(level=logging.INFO)
 
 
 @sio.event
@@ -34,19 +41,28 @@ def handle_suggestions(message):
     """
     Handler for messages sent by the server to the "suggestion list" event.
     """
-    print("Event name: suggestion list. Message from server:", message)
+    elasped_time = (datetime.utcnow().timestamp() - message["start_ts_utc"]) * 1000
+    logging.info(f"Took {elasped_time} ms")
+    print(
+        "Suggestions from server for msg id {}: {}".format(
+            message["sequence_id"], message.get("suggestions")
+        )
+    )
     assert message["room"] == sio.sid, (message["room"], sio.sid)
 
 
 def main():
-    counter = 0
-    client_id = sys.argv[1]
-    wait_time = int(sys.argv[2])
-    msg_prefix = f"Client: {client_id}. Packet:"
+    seq_id = 0
     while True:
-        sleep(wait_time)
-        counter += wait_time
-        sio.emit(out_event, msg_prefix + str(counter // wait_time))
+        text = input("-->:")
+        message = {
+            "text": text,
+            "stage": "send-request",
+            "start_ts_utc": datetime.utcnow().timestamp(),
+            "sequence_id": seq_id,
+        }
+        sio.emit(out_event, json.dumps(message).encode("utf-8"))
+        seq_id += 1
 
 
 if __name__ == "__main__":
