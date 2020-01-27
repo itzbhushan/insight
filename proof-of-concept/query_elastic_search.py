@@ -31,13 +31,13 @@ def main():
     index = "-".join([args.subreddit, "submissions"])
     # total, docs = clio_search(es_url, index=index, query="shotgun")
     limit = 5
-    query = {"query": {"match": {"title": args.text}}, "size": limit}
+    query = {"query": {"match": {"selftext": args.text}}, "size": limit}
     _ = search(es, index, query)
 
     query = {
         "query": {
             "more_like_this": {
-                "fields": ["title"],
+                "fields": ["selftext", "title"],
                 "like": args.text,
                 "min_term_freq": 1,
                 "max_query_terms": 20,

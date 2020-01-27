@@ -1,0 +1,10 @@
+{
+    "mappings": {
+        "properties": {
+            "title": {"type": "text"},
+            "url": {"type": "text"},
+            "created_utc": {"type": "date"},
+            "selftext": {"type": "text"}
+        }
+    }
+}
