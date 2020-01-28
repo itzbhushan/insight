@@ -11,4 +11,6 @@ pre-commit  # Framework for multi langugage precommit hooks: https://pre-commit.
 
 pulsar-client  #  python client for pulsar: https://pulsar.apache.org/docs/en/client-libraries-python
 
+pyspark  # python package for Apache spark.
+
 python-socketio[client]  # python client for socketio, sync
