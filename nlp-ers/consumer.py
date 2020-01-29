@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from argparse import ArgumentParser
 import json
 import logging
 import os
@@ -10,9 +11,10 @@ from pulsar import Client
 from pulsar import ConsumerType
 
 logging.basicConfig(level=logging.INFO)
+ES_INDEX = "so-questions2"
 
 
-def find_suggestions(es, in_topic, out_topic, client):
+def find_suggestions(es, in_topic, out_topic, client, es_index):
     """
     Consume from in_topic, process and produce to out_topic.
 
@@ -24,7 +26,6 @@ def find_suggestions(es, in_topic, out_topic, client):
         in_topic, "test-subscription", consumer_type=ConsumerType.Shared
     )
     producer = client.create_producer(out_topic)
-    index = "askreddit-submissions"
     while True:
         msg = consumer.receive()
         consumer.acknowledge(msg)
@@ -45,7 +46,7 @@ def find_suggestions(es, in_topic, out_topic, client):
                 }
             }
         }
-        response = es.search(index=index, body=query)
+        response = es.search(index=es_index, body=query)
         title = ""
         for hit in response["hits"]["hits"]:
             title = "\n".join([title, hit["_source"]["title"]])
@@ -53,10 +54,18 @@ def find_suggestions(es, in_topic, out_topic, client):
         producer.send(json.dumps(packet).encode("utf-8"))
 
 
-if __name__ == "__main__":
+def main():
+    parser = ArgumentParser("Pulsar consumers searching ES.")
+    parser.add_argument("--index", help="ES index to search", default=ES_INDEX)
+    args = parser.parse_args()
+
     pulsar_broker_url = os.getenv("PULSAR_BROKER_URL")
     client = Client(pulsar_broker_url)
     in_topic = "suggest-topic"
     out_topic = "suggestions-topic"
     es = Elasticsearch(os.getenv("ES_URL"))
-    find_suggestions(es, in_topic, out_topic, client)
+    find_suggestions(es, in_topic, out_topic, client, args.index)
+
+
+if __name__ == "__main__":
+    main()
