@@ -14,6 +14,18 @@ logging.basicConfig(level=logging.INFO)
 ES_INDEX = "so-questions2"
 
 
+def msg_received_callback(status, msg_id):
+    """
+    Function invoked when the message is acknowledged by the broker.
+
+    params:
+    ------
+    status: Publishing status (usually "ok").
+    msg_id: Message identifier.
+    """
+    logging.debug(f"Message {msg_id} result = {status}")
+
+
 def find_suggestions(es, in_topic, out_topic, client, es_index):
     """
     Consume from in_topic, process and produce to out_topic.
@@ -51,7 +63,7 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
         for hit in response["hits"]["hits"]:
             title = "\n".join([title, hit["_source"]["title"]])
         packet["suggestions"] = title
-        producer.send(json.dumps(packet).encode("utf-8"))
+        producer.send_async(json.dumps(packet).encode("utf-8"), msg_received_callback)
 
 
 def main():
