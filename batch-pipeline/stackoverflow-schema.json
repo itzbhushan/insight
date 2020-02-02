@@ -5,10 +5,7 @@
             "title": {"type": "text"},
             "body": {"type": "text"},
             "tags": {"type": "keyword"},
-            "type": {"type": "keyword"},
-            "reputation": {"type": "numeric"},
-            "score": {"type": "numeric"},
-            "answer_count": {"type": "numeric"}
+            "site": {"type": "keyword"}
         }
     }
 }
