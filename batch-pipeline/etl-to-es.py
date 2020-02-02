@@ -47,8 +47,6 @@ def main():
     df.write.format("org.elasticsearch.spark.sql").option(
         "es.nodes", os.getenv("ES_URL")
     ).option("es.port", 443).option("es.resource", args.es_index).option(
-        "es.mapping.id", "id"
-    ).option(
         "es.nodes.wan.only", True
     ).mode(
         "append"
