@@ -11,7 +11,6 @@ from pyspark.sql import SparkSession, SQLContext, types
 
 logging.basicConfig(level=logging.WARNING)
 STACK_OVERFLOW_SCHEMA = "stackoverflow-schema.json"
-S3_URL = "s3a://stackoverflow-ds"
 ES_INDEX = "so-questions"
 
 
@@ -21,7 +20,7 @@ def main():
     parser.add_argument(
         "--mapping", help="Path to mapping.json.", default=STACK_OVERFLOW_SCHEMA
     )
-    parser.add_argument("--s3-url", help="S3 URL prefix", default=S3_URL)
+    parser.add_argument("--s3-url", help="S3 URL prefix", default=os.getenv("S3_URL"))
     parser.add_argument("--es-index", help="Index in ES.", default=ES_INDEX)
     args = parser.parse_args()
 
