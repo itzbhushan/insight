@@ -60,6 +60,7 @@ def main():
             "stage": "send-request",
             "start_ts_utc": datetime.utcnow().timestamp(),
             "sequence_id": seq_id,
+            "site": "stackoverflow",
         }
         sio.emit(out_event, json.dumps(message).encode("utf-8"))
         seq_id += 1
