@@ -8,9 +8,9 @@ Introduction
 *you-complete-me* is a real time text analytics data pipeline for providing suggestions based on
 semantic information to users posting questions in social media platforms.
 
-Presentation_.
+Slides_.
 
-.. _Presentation: https://docs.google.com/presentation/d/1Mul35kcTs_uO0nq-HNzs_09jkEVuctAkxtE7EwbCvIg
+.. _Slides: https://docs.google.com/presentation/d/1Mul35kcTs_uO0nq-HNzs_09jkEVuctAkxtE7EwbCvIg
 
 Business use cases
 ##################
@@ -44,9 +44,9 @@ local-application <-> web-server <-> Pulsar <-> Elastic-search.
 Data source
 ###########
 
-A subset of the reddit_ dataset.
+A subset of the stackexchange_ dataset.
 
-.. _reddit: https://files.pushshift.io/reddit/
+.. _stackexchange: https://files.pushshift.io/stackexchange
 
 Minimum-viable Project (MVP)
 ############################
