@@ -4,6 +4,9 @@ black  # Uncompromising code formatter: https://github.com/psf/black
 
 boto3  # Amazon AWS SDK. https://boto3.amazonaws.com/
 
+
+findspark # package to make it easier to setup spark cluster.
+
 flask  # python based web framework: https://flask.palletsprojects.com/en/1.1.x/
 flask-socketio  # flask/socket-io integration for web-server
 
@@ -14,3 +17,5 @@ pulsar-client  #  python client for pulsar: https://pulsar.apache.org/docs/en/cl
 pyspark  # python package for Apache spark.
 
 python-socketio[client]  # python client for socketio, sync
+
+sqlalchemy

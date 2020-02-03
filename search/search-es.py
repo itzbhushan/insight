@@ -10,7 +10,7 @@ from elasticsearch import Elasticsearch
 from pulsar import Client
 from pulsar import ConsumerType
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def msg_received_callback(status, msg_id):
@@ -50,7 +50,7 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
         # Responses from ES only need to include a subset of keys.
         # For example, we don't need to return the "body" of the message.
         # Body is large, takes time to (de)serialize.
-        keys_to_return = ["id", "title", "site"]
+        keys_to_return = ["id", "title"]
 
         query = {
             "_source": keys_to_return,
@@ -59,7 +59,7 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
                     "must": [
                         {
                             "more_like_this": {
-                                "fields": ["body"],
+                                "fields": ["title"],
                                 "like": packet["text"],
                                 "min_term_freq": 1,
                                 "max_query_terms": 20,
@@ -71,10 +71,14 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
             },
         }
         response = es.search(index=es_index, body=query)
-        results = []
+        results = {}
         for hit in response["hits"]["hits"]:
-            title, score = hit["_source"]["title"], hit["_score"]
-            results.append({"title": title, "score": score})
+            title, score, id = (
+                hit["_source"]["title"],
+                hit["_score"],
+                hit["_source"]["id"],
+            )
+            results[id] = {"title": title, "score": score}
         packet["suggestions"] = results
         producer.send_async(json.dumps(packet).encode("utf-8"), msg_received_callback)
 
@@ -109,7 +113,7 @@ def main():
 
     client = Client(args.pulsar_broker_url)
     in_topic = "suggest-topic"
-    out_topic = "suggestions-topic"
+    out_topic = "curate-topic"
     es = Elasticsearch(args.es_url)
     find_suggestions(es, in_topic, out_topic, client, args.index)
 
