@@ -46,8 +46,14 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
         logging.debug(
             f"NLP-er: Received message {packet['text']}, id={msg_id}, room={packet['room']}"
         )
-        ## NLP logic goes here.
+
+        # Responses from ES only need to include a subset of keys.
+        # For example, we don't need to return the "body" of the message.
+        # Body is large, takes time to (de)serialize.
+        keys_to_return = ["id", "title", "site"]
+
         query = {
+            "_source": keys_to_return,
             "query": {
                 "bool": {
                     "must": [
@@ -62,7 +68,7 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
                     ],
                     "filter": [{"term": {"site": packet["site"]}}],
                 }
-            }
+            },
         }
         response = es.search(index=es_index, body=query)
         results = []
