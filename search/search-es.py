@@ -10,7 +10,7 @@ from elasticsearch import Elasticsearch
 from pulsar import Client
 from pulsar import ConsumerType
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARN)
 
 
 def msg_received_callback(status, msg_id):
@@ -59,7 +59,8 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
                     "must": [
                         {
                             "more_like_this": {
-                                "fields": ["title"],
+                                # search the body of existing questions (instead of the title).
+                                "fields": ["body"],
                                 "like": packet["text"],
                                 "min_term_freq": 1,
                                 "max_query_terms": 20,

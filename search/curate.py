@@ -12,9 +12,9 @@ from sqlalchemy import create_engine, and_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.query import Query
 
-from tables import Users, Questions
+from tables import Questions
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN)
 
 
 def msg_received_callback(status, msg_id):
@@ -30,18 +30,35 @@ def msg_received_callback(status, msg_id):
 
 
 def init_postgres_session(connection):
+    """
+    Setup access to postgres.
+
+    A function that sets up acces to postgres and returns a session
+    object. Other functions can use the session object and run
+    queries as needed.
+    """
     engine = create_engine("postgresql://{user}:{pwd}@{url}/{db}".format(**connection))
     Session = sessionmaker(bind=engine)
     return Session()
 
 
 def curate(suggestions, site, session):
+    """
+    Score search suggestions based on question metadata.
+
+    ES scores documents based on the term statistics (tf-idf). However,
+    better suggestions can be provided if we take into account some
+    metadata about the question itself. This function curates (i.e. scores)
+    results by scaling the ES score with the number of answers for that
+    question.
+    """
     results = (
         session.query(Questions)
         .filter(and_(Questions.site == site, Questions.id.in_(suggestions.keys())))
         .all()
     )
     for q in results:
+        # Retain original score for question with answer_count == 0. Hence +1.
         suggestions[str(q.id)]["score"] *= q.answer_count + 1
     return suggestions
 
