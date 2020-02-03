@@ -11,7 +11,6 @@ from pulsar import Client
 from pulsar import ConsumerType
 
 logging.basicConfig(level=logging.INFO)
-ES_INDEX = "so-questions2"
 
 
 def msg_received_callback(status, msg_id):
@@ -50,32 +49,62 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
         ## NLP logic goes here.
         query = {
             "query": {
-                "more_like_this": {
-                    "fields": ["title"],
-                    "like": packet["text"],
-                    "min_term_freq": 1,
-                    "max_query_terms": 20,
+                "bool": {
+                    "must": [
+                        {
+                            "more_like_this": {
+                                "fields": ["body"],
+                                "like": packet["text"],
+                                "min_term_freq": 1,
+                                "max_query_terms": 20,
+                            }
+                        }
+                    ],
+                    "filter": [{"term": {"site": packet["site"]}}],
                 }
             }
         }
         response = es.search(index=es_index, body=query)
-        title = ""
+        results = []
         for hit in response["hits"]["hits"]:
-            title = "\n".join([title, hit["_source"]["title"]])
-        packet["suggestions"] = title
+            title, score = hit["_source"]["title"], hit["_score"]
+            results.append({"title": title, "score": score})
+        packet["suggestions"] = results
         producer.send_async(json.dumps(packet).encode("utf-8"), msg_received_callback)
 
 
 def main():
     parser = ArgumentParser("Pulsar consumers searching ES.")
-    parser.add_argument("--index", help="ES index to search", default=ES_INDEX)
+    parser.add_argument(
+        "--index", help="ES index to search", default=os.getenv("ES_INDEX")
+    )
+    parser.add_argument(
+        "--pulsar-broker-url",
+        help="URL of pulsar broker.",
+        default=os.getenv("PULSAR_BROKER_URL"),
+    )
+    parser.add_argument(
+        "--es-url", help="Elastic Search URL", default=os.getenv("ES_URL")
+    )
     args = parser.parse_args()
 
-    pulsar_broker_url = os.getenv("PULSAR_BROKER_URL")
-    client = Client(pulsar_broker_url)
+    if not args.index:
+        parser.error(
+            "Empty ES index. Update ES_INDEX environment variable with index name."
+        )
+
+    if not args.pulsar_broker_url:
+        parser.error(
+            "Pulsar broker url is null. Set PULSAR_BROKER_URL environment variable."
+        )
+
+    if not args.es_url:
+        parser.error("ES url is null. Set ES_URL environment variable.")
+
+    client = Client(args.pulsar_broker_url)
     in_topic = "suggest-topic"
     out_topic = "suggestions-topic"
-    es = Elasticsearch(os.getenv("ES_URL"))
+    es = Elasticsearch(args.es_url)
     find_suggestions(es, in_topic, out_topic, client, args.index)
 
 
