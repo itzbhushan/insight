@@ -1,0 +1,6 @@
+# keep dependencies sorted alphabetically.
+
+flask  # python based web framework: https://flask.palletsprojects.com/en/1.1.x/
+flask-socketio  # flask/socket-io integration for web-server
+pulsar-client  #  python client for pulsar: https://pulsar.apache.org/docs/en/client-libraries-python
+

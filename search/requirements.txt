@@ -1,0 +1,5 @@
+# keep dependencies sorted alphabetically.
+
+elasticsearch
+pulsar-client  #  python client for pulsar: https://pulsar.apache.org/docs/en/client-libraries-python
+sqlalchemy  # ORM to connect to postgres.

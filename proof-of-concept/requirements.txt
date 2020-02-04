@@ -1,0 +1,8 @@
+# keep dependencies sorted alphabetically.
+
+elasticsearch
+findspark # package to make it easier to setup spark cluster.
+pulsar-client  #  python client for pulsar: https://pulsar.apache.org/docs/en/client-libraries-python
+pandas  # data analytics package.
+pyspark  # python package for Apache spark.
+sqlalchemy

@@ -1,0 +1,1 @@
+python-socketio[client]  # python client for socketio, sync
