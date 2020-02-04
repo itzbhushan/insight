@@ -76,6 +76,7 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
         }
         response = es.search(index=es_index, body=query)
         results = {}
+        packet["total_hits"] = response["hits"]["total"]["value"]
         for hit in response["hits"]["hits"]:
             title, score, id = (
                 hit["_source"]["title"],

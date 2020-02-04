@@ -42,11 +42,13 @@ def handle_suggestions(message):
     Handler for messages sent by the server to the "suggestion list" event.
     """
     message["timestamps"].append(datetime.utcnow().timestamp())
+    timestamps_str = ", ".join([f"{ts:.2f}" for ts in message["timestamps"]])
     elapsed_time = (message["timestamps"][-1] - message["timestamps"][0]) * 1000
     seq_id = message["sequence_id"]
-    timestamps_str = ", ".join([f"{ts:.2f}" for ts in message["timestamps"]])
+    site = message["site"]
+    hits = message["total_hits"]
     logging.info(f"Received msg {seq_id}. Took {elapsed_time:.2f} ms.")
-    print(f"{seq_id}, {timestamps_str}", file=out_file, flush=True)
+    print(f"{site}, {hits}, {seq_id}, {timestamps_str}", file=out_file, flush=True)
 
 
 def main():
@@ -88,7 +90,7 @@ def main():
     global out_file
     out_file = open(out_file_path, "a")
     print(
-        "msg_id, client_send, server_req, es_start, es_end, pg_start, pg_end, server_rsp, client_rsp",
+        "site, hits, msg_id, client_send, server_req, es_start, es_end, pg_start, pg_end, server_rsp, client_rsp",
         file=out_file,
     )
     logging.info(f"Saving metrics to {out_file_path}.")
