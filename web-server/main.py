@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from argparse import ArgumentParser
 import json
 import os
 import logging
@@ -23,11 +24,12 @@ pulsar_broker_url = os.getenv("PULSAR_BROKER_URL")
 out_topic = "suggest-topic"
 in_topic = "suggestions-topic"
 
-client = Client(pulsar_broker_url)
-producer = client.create_producer(out_topic)
+client = None
+producer = None
 
 thread = None
 thread_lock = Lock()
+loopback = False
 
 logging.basicConfig(level=logging.INFO)
 
@@ -54,8 +56,19 @@ def get_suggestions(data):
     """
     data_dict = json.loads(data.decode("utf-8"))
     data_dict["room"] = request.sid
+    data_dict["suggestions"] = loopback_suggestions(data_dict["text"])
     logging.debug(f"Message from client {request.sid} is {data_dict}")
-    producer.send_async(json.dumps(data_dict).encode("utf-8"), msg_received_callback)
+    if loopback:
+        socketio.emit(out_event, data_dict, room=request.sid)
+    else:
+        producer.send_async(
+            json.dumps(data_dict).encode("utf-8"), msg_received_callback
+        )
+
+
+def loopback_suggestions(text):
+    suggestions = {str(i): {"title": text + str(i), "score": i} for i in range(10)}
+    return suggestions
 
 
 def consumer_thread(client, in_topic):
@@ -83,14 +96,31 @@ def consumer_thread(client, in_topic):
 
 @socketio.on("connect")
 def test_connect():
+    if loopback:
+        return
+
     global thread
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(consumer_thread, client, in_topic)
 
 
-if __name__ == "__main__":
+def main():
+    parser = ArgumentParser("Web-server")
+    parser.add_argument("--loopback", action="store_true", help="Loop back mode")
+    args = parser.parse_args()
+
+    global loopback
+    loopback = args.loopback
+
+    if not loopback:
+        global client, producer
+        client = Client(pulsar_broker_url)
+        producer = client.create_producer(out_topic)
+
     socketio.run(app, host="0.0.0.0", debug=True)
     print("Closing server connection")
-    client.close()
-    print("Closing pulsar client")
+
+
+if __name__ == "__main__":
+    main()
