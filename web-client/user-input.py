@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import sys
-from time import sleep
 import socketio
 
 url = os.getenv("WEB_SERVER")
