@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser
+from datetime import datetime
 import json
 import logging
 import os
@@ -43,6 +44,8 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
         msg_id = msg.message_id()
         data = msg.data().decode("utf-8")
         packet = json.loads(data)
+        if "timestamps" in packet:
+            packet["timestamps"].append(datetime.utcnow().timestamp())
         logging.debug(
             f"NLP-er: Received message {packet['text']}, id={msg_id}, room={packet['room']}"
         )
@@ -81,6 +84,8 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
             )
             results[id] = {"title": title, "score": score}
         packet["suggestions"] = results
+        if "timestamps" in packet:
+            packet["timestamps"].append(datetime.utcnow().timestamp())
         producer.send_async(json.dumps(packet).encode("utf-8"), msg_received_callback)
 
 

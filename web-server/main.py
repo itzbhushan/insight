@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser
+from datetime import datetime
 import json
 import os
 import logging
@@ -56,6 +57,9 @@ def get_suggestions(data):
     """
     data_dict = json.loads(data.decode("utf-8"))
     data_dict["room"] = request.sid
+    if "timestamps" in data_dict:
+        data_dict["timestamps"].append(datetime.utcnow().timestamp())
+
     data_dict["suggestions"] = loopback_suggestions(data_dict["text"])
     logging.debug(f"Message from client {request.sid} is {data_dict}")
     if loopback:
@@ -88,6 +92,8 @@ def consumer_thread(client, in_topic):
         msg_id = msg.message_id()
         data = msg.data().decode("utf-8")
         packet = json.loads(data)
+        if "timestamps" in packet:
+            packet["timestamps"].append(datetime.utcnow().timestamp())
         logging.debug(
             f"Web-server: Received message {packet['text']}, id={msg_id}, room={packet['room']}"
         )

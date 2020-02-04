@@ -40,11 +40,13 @@ def handle_suggestions(message):
     """
     Handler for messages sent by the server to the "suggestion list" event.
     """
-    elasped_time = (datetime.utcnow().timestamp() - message["start_ts_utc"]) * 1000
-    logging.info(f"Took {elasped_time} ms")
-    print(
-        "Suggestions from server for msg id {}: {}".format(
-            message["sequence_id"], message.get("suggestions")
+    message["timestamps"].append(datetime.utcnow().timestamp())
+    elasped_time = (message["timestamps"][-1] - message["timestamps"][0]) * 1000
+    num_suggestions = len(message.get("suggestions", []))
+    logging.info(f"Took {elasped_time} ms. Returned {num_suggestions} suggestions.")
+    logging.debug(
+        "Suggestions from server for msg id {}: {}. Timestamps {}".format(
+            message["sequence_id"], message.get("suggestions"), message["timestamps"]
         )
     )
     assert message["room"] == sio.sid, (message["room"], sio.sid)
@@ -57,7 +59,7 @@ def main():
         message = {
             "text": text,
             "stage": "send-request",
-            "start_ts_utc": datetime.utcnow().timestamp(),
+            "timestamps": [datetime.utcnow().timestamp()],
             "sequence_id": seq_id,
             "site": "stackoverflow",
         }
