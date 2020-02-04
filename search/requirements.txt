@@ -2,4 +2,5 @@
 
 elasticsearch
 pulsar-client  #  python client for pulsar: https://pulsar.apache.org/docs/en/client-libraries-python
+psycopg2
 sqlalchemy  # ORM to connect to postgres.
