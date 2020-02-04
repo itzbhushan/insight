@@ -26,7 +26,7 @@ def msg_received_callback(status, msg_id):
     logging.debug(f"Message {msg_id} result = {status}")
 
 
-def find_suggestions(es, in_topic, out_topic, client, es_index):
+def find_suggestions(es, in_topic, out_topic, client, es_index, limit_result_count):
     """
     Consume from in_topic, process and produce to out_topic.
 
@@ -57,12 +57,13 @@ def find_suggestions(es, in_topic, out_topic, client, es_index):
 
         query = {
             "_source": keys_to_return,
+            "size": limit_result_count,  # number of results to limit.
             "query": {
                 "bool": {
                     "must": [
                         {
                             "more_like_this": {
-                                # search the body of existing questions (instead of the title).
+                                # search the body of existing questions (not title).
                                 "fields": ["body"],
                                 "like": packet["text"],
                                 "min_term_freq": 1,
@@ -103,6 +104,11 @@ def main():
     parser.add_argument(
         "--es-url", help="Elastic Search URL", default=os.getenv("ES_URL")
     )
+    # 10K is the default max_result_window limit in ES.
+    parser.add_argument(
+        "--limit-result-count", help="Limit ES result count.", default=10000, type=int
+    )
+
     args = parser.parse_args()
 
     if not args.index:
@@ -122,7 +128,9 @@ def main():
     in_topic = "suggest-topic"
     out_topic = "curate-topic"
     es = Elasticsearch(args.es_url)
-    find_suggestions(es, in_topic, out_topic, client, args.index)
+    find_suggestions(
+        es, in_topic, out_topic, client, args.index, args.limit_result_count
+    )
 
 
 if __name__ == "__main__":
