@@ -104,9 +104,9 @@ def main():
     parser.add_argument(
         "--es-url", help="Elastic Search URL", default=os.getenv("ES_URL")
     )
-    # 10K is the default max_result_window limit in ES.
+    # 10K is the default max_result_window limit in ES, but we only need 10 usually.
     parser.add_argument(
-        "--limit-result-count", help="Limit ES result count.", default=10000, type=int
+        "--limit-result-count", help="Limit ES result count.", default=10, type=int
     )
 
     args = parser.parse_args()
