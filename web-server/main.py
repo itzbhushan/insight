@@ -129,7 +129,7 @@ def main():
         client = Client(pulsar_broker_url)
         producer = client.create_producer(out_topic)
 
-    socketio.run(app, host="0.0.0.0", debug=True)
+    socketio.run(app, host="0.0.0.0", port=80, debug=True)
     print("Closing server connection")
 
 
