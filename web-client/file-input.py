@@ -7,7 +7,6 @@ import logging
 import os
 import sys
 import socketio
-from time import sleep
 
 url = os.getenv("WEB_SERVER")
 sio = socketio.Client()
@@ -18,6 +17,7 @@ in_event = "suggestions-list"
 out_file = None
 
 logging.basicConfig(level=logging.INFO)
+num_messages = 0
 
 
 @sio.event
@@ -32,7 +32,6 @@ def connect_error():
 
 @sio.event
 def disconnect():
-    out_file.close()
     logging.info("I'm disconnected!")
 
 
@@ -48,7 +47,11 @@ def handle_suggestions(message):
     site = message["site"]
     hits = message["total_hits"]
     logging.info(f"Received msg {seq_id}. Took {elapsed_time:.2f} ms.")
-    print(f"{site}, {hits}, {seq_id}, {timestamps_str}", file=out_file, flush=True)
+    print(f"{site}, {hits}, {seq_id}, {timestamps_str}", file=out_file)
+
+    if seq_id == num_messages - 1:
+        # Exit the program by disconnecting from server, which unblocks the main function.
+        sio.disconnect()
 
 
 def main():
@@ -67,15 +70,15 @@ def main():
     )
     parser.add_argument(
         "--num-messages",
-        help="Number of messags to send. Defaults to reading the entire file.",
-        default=0,
+        help="Number of messags to send. Defaults to 1.",
+        default=1,
         type=int,
     )
 
     args = parser.parse_args()
 
     body_length = 100
-    seq_id = 0
+    seq_id = 1
 
     if args.rate == 0:
         rate_limit = False
@@ -94,6 +97,8 @@ def main():
         file=out_file,
     )
     logging.info(f"Saving metrics to {out_file_path}.")
+    global num_messages
+    num_messages = args.num_messages
 
     for line in args.file:
         l_json = json.loads(line)
@@ -110,11 +115,21 @@ def main():
         logging.debug(f"Sending message: {seq_id}")
         seq_id += 1
 
-        if args.num_messages and seq_id >= args.num_messages:
+        if num_messages and seq_id >= num_messages:
             break
 
         if rate_limit:
-            sleep(sleep_time)
+            sio.sleep(sleep_time)
+    else:
+        # for/else. Code reaches here when for loop ends naturally.
+        # i.e. number of lines in file < num_messages. In which case
+        # set num_messages to the last seq_id.
+        num_messages = seq_id
+
+    logging.debug(f"{num_messages} messages sent to server.")
+    sio.wait()  # wait until disconnect from server.
+    out_file.close()
+    logging.info("Received all messaged. Exiting.")
 
 
 if __name__ == "__main__":
