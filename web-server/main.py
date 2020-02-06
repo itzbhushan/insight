@@ -7,6 +7,10 @@ import os
 import logging
 from threading import Lock
 
+from engineio.payload import Payload
+
+Payload.max_decode_packets = 100
+
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, send
 
