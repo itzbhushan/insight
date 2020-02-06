@@ -96,7 +96,6 @@ def main():
         "site, hits, msg_id, client_send, server_req, es_start, es_end, pg_start, pg_end, server_rsp, client_rsp",
         file=out_file,
     )
-    logging.info(f"Saving metrics to {out_file_path}.")
     global num_messages
     num_messages = args.num_messages
 
@@ -129,7 +128,7 @@ def main():
     logging.debug(f"{num_messages} messages sent to server.")
     sio.wait()  # wait until disconnect from server.
     out_file.close()
-    logging.info("Received all messaged. Exiting.")
+    logging.info(f"Processed all messages. Saved metrics to {out_file_path}. Exiting.")
 
 
 if __name__ == "__main__":
