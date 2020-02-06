@@ -26,7 +26,41 @@ def msg_received_callback(status, msg_id):
     logging.debug(f"Message {msg_id} result = {status}")
 
 
-def find_suggestions(es, in_topic, out_topic, client, es_index, limit_result_count):
+def select_query_type(type, field, text, site):
+    query = {}
+    query["match"] = {
+        "query": {
+            "bool": {
+                "must": [{"match": {field: text}}],
+                "filter": [{"term": {"site": site}}],
+            }
+        }
+    }
+
+    query["mlt"] = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "more_like_this": {
+                            # search the body of existing questions (not title).
+                            "fields": [field],
+                            "like": text,
+                            "min_term_freq": 1,
+                            "max_query_terms": 20,
+                        }
+                    }
+                ],
+                "filter": [{"term": {"site": site}}],
+            }
+        }
+    }
+
+    assert type in query
+    return query[type]
+
+
+def find_suggestions(es, in_topic, out_topic, client, args):
     """
     Consume from in_topic, process and produce to out_topic.
 
@@ -55,27 +89,15 @@ def find_suggestions(es, in_topic, out_topic, client, es_index, limit_result_cou
         # Body is large, takes time to (de)serialize.
         keys_to_return = ["id", "title"]
 
-        query = {
+        es_query = {
             "_source": keys_to_return,
-            "size": limit_result_count,  # number of results to limit.
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "more_like_this": {
-                                # search the body of existing questions (not title).
-                                "fields": ["body"],
-                                "like": packet["text"],
-                                "min_term_freq": 1,
-                                "max_query_terms": 20,
-                            }
-                        }
-                    ],
-                    "filter": [{"term": {"site": packet["site"]}}],
-                }
-            },
+            "size": args.limit_result_count,  # number of results to limit.
+            **select_query_type(
+                args.query_type, args.field, packet["text"], packet["site"]
+            ),
         }
-        response = es.search(index=es_index, body=query)
+
+        response = es.search(index=args.index, body=es_query)
         results = {}
         packet["total_hits"] = response["hits"]["total"]["value"]
         for hit in response["hits"]["hits"]:
@@ -104,6 +126,12 @@ def main():
     parser.add_argument(
         "--es-url", help="Elastic Search URL", default=os.getenv("ES_URL")
     )
+    parser.add_argument(
+        "--field", help="ES document to search. Defaults to body.", default="body"
+    )
+    parser.add_argument(
+        "--query-type", help="ES query type", default="mlt", choices=["match", "mlt"]
+    )
     # 10K is the default max_result_window limit in ES, but we only need 10 usually.
     parser.add_argument(
         "--limit-result-count", help="Limit ES result count.", default=10, type=int
@@ -128,9 +156,7 @@ def main():
     in_topic = "suggest-topic"
     out_topic = "curate-topic"
     es = Elasticsearch(args.es_url)
-    find_suggestions(
-        es, in_topic, out_topic, client, args.index, args.limit_result_count
-    )
+    find_suggestions(es, in_topic, out_topic, client, args)
 
 
 if __name__ == "__main__":
