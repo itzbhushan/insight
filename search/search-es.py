@@ -7,6 +7,7 @@ import logging
 import os
 
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionTimeout
 
 from pulsar import Client
 from pulsar import ConsumerType
@@ -97,16 +98,21 @@ def find_suggestions(es, in_topic, out_topic, client, args):
             ),
         }
 
-        response = es.search(index=args.index, body=es_query)
         results = {}
-        packet["total_hits"] = response["hits"]["total"]["value"]
-        for hit in response["hits"]["hits"]:
-            title, score, id = (
-                hit["_source"]["title"],
-                hit["_score"],
-                hit["_source"]["id"],
-            )
-            results[id] = {"title": title, "score": score}
+        try:
+            response = es.search(index=args.index, body=es_query)
+        except ConnectionTimeout as e:
+            logging.exception("Read timed out. Skipping this read.", str(e))
+        else:  # N.B try/else clause.
+            packet["total_hits"] = response["hits"]["total"]["value"]
+            for hit in response["hits"]["hits"]:
+                title, score, id = (
+                    hit["_source"]["title"],
+                    hit["_score"],
+                    hit["_source"]["id"],
+                )
+                results[id] = {"title": title, "score": score}
+
         packet["suggestions"] = results
         if "timestamps" in packet:
             packet["timestamps"].append(datetime.utcnow().timestamp())
@@ -130,7 +136,7 @@ def main():
         "--field", help="ES document to search. Defaults to body.", default="body"
     )
     parser.add_argument(
-        "--query-type", help="ES query type", default="mlt", choices=["match", "mlt"]
+        "--query-type", help="ES query type", default="match", choices=["match", "mlt"]
     )
     # 10K is the default max_result_window limit in ES, but we only need 10 usually.
     parser.add_argument(
