@@ -49,7 +49,7 @@ def handle_suggestions(message):
     logging.info(f"Received msg {seq_id}. Took {elapsed_time:.2f} ms.")
     print(f"{site}, {hits}, {seq_id}, {timestamps_str}", file=out_file)
 
-    if seq_id == num_messages - 1:
+    if seq_id == num_messages:
         # Exit the program by disconnecting from server, which unblocks the main function.
         sio.disconnect()
 
@@ -114,7 +114,7 @@ def main():
         logging.debug(f"Sending message: {seq_id}")
         seq_id += 1
 
-        if num_messages and seq_id >= num_messages:
+        if num_messages and seq_id > num_messages:
             break
 
         if rate_limit:
