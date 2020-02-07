@@ -100,7 +100,15 @@ def find_suggestions(es, in_topic, out_topic, client, args):
 
         results = {}
         try:
-            response = es.search(index=args.index, body=es_query)
+            # In order to optimize ES performance, we want to experiment with
+            # different indexing schemes. For example, instead of one common
+            # index for the entire dataset, we could have an index per stackexchange
+            # subdomain (or site) as they call it. In order to experiment with
+            # different indexing options, pass the name of the index to the
+            # consumer in the body of the message. If no index is present, use
+            # the default index.
+            index = packet.get("index", args.index)
+            response = es.search(index=index, body=es_query)
         except ConnectionTimeout as e:
             logging.exception("Read timed out. Skipping this read.", str(e))
         else:  # N.B try/else clause.
