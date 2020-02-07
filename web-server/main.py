@@ -17,7 +17,7 @@ from flask_socketio import SocketIO, emit, send
 from pulsar import Client
 from pulsar import ConsumerType
 
-app = Flask(__name__, template_folder="templates")
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app, async_mode="threading")
