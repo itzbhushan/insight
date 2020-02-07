@@ -79,7 +79,7 @@ def main():
             "sequence_id": seq_id,
             "site": "stackoverflow",
         }
-        sio.emit(out_event, json.dumps(message).encode("utf-8"))
+        sio.emit(out_event, message)
         seq_id += 1
 
     out_file.close()

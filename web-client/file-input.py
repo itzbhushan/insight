@@ -110,7 +110,7 @@ def main():
             "sequence_id": seq_id,
             "site": l_json["site"],
         }
-        sio.emit(out_event, json.dumps(message).encode("utf-8"))
+        sio.emit(out_event, message)
         logging.debug(f"Sending message: {seq_id}")
         seq_id += 1
 
