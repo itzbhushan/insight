@@ -8,10 +8,14 @@ import os
 import findspark
 
 from pyspark.sql import SparkSession, SQLContext, types
+from pyspark.sql.functions import col, when
 
 logging.basicConfig(level=logging.WARNING)
 STACK_OVERFLOW_SCHEMA = "stackoverflow-schema.json"
 ES_INDEX = "so-questions"
+
+
+index_mapping_types = ["default", "custom"]
 
 
 def main():
@@ -20,8 +24,18 @@ def main():
     parser.add_argument(
         "--mapping", help="Path to mapping.json.", default=STACK_OVERFLOW_SCHEMA
     )
-    parser.add_argument("--s3-url", help="S3 URL prefix", default=os.getenv("S3_URL"))
-    parser.add_argument("--es-index", help="Index in ES.", default=ES_INDEX)
+    parser.add_argument("--s3-url", help="S3 URL prefix.", default=os.getenv("S3_URL"))
+    parser.add_argument(
+        "--index-type",
+        help="Type of index.",
+        default="default",
+        choices=index_mapping_types,
+    )
+    parser.add_argument(
+        "--es-index",
+        help="If index type is default, then the name of the default index.",
+        default=ES_INDEX,
+    )
     args = parser.parse_args()
 
     with open(args.mapping) as f:
@@ -44,9 +58,19 @@ def main():
     df = df.filter(df.type == "question").select(*columns)
     count = df.count()
     logging.info(f"ETL-ing {count} documents to elastic search.")
+
+    if args.index_type == "default":
+        index = args.es_index
+    else:
+        df = df.withColumn(
+            "index",
+            when(col("site") == "stackoverflow", "stackoverflow").otherwise("others"),
+        )
+        index = "{index}"  # use the index column in dataframe as the index.
+
     df.write.format("org.elasticsearch.spark.sql").option(
         "es.nodes", os.getenv("ES_URL")
-    ).option("es.port", 443).option("es.resource", args.es_index).option(
+    ).option("es.port", 443).option("es.resource", index).option(
         "es.nodes.wan.only", True
     ).mode(
         "append"
