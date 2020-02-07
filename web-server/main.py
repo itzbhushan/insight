@@ -18,6 +18,7 @@ from pulsar import Client
 from pulsar import ConsumerType
 
 app = Flask(__name__, template_folder="templates")
+
 app.config["SECRET_KEY"] = "secret!"
 socketio = SocketIO(app, async_mode="threading")
 # socketio = SocketIO(app, async_mode="eventlet")
@@ -59,19 +60,17 @@ def get_suggestions(data):
     This function is called when clients send message to the
     get suggestions event.
     """
-    data_dict = json.loads(data.decode("utf-8"))
-    data_dict["room"] = request.sid
-    if "timestamps" in data_dict:
-        data_dict["timestamps"].append(datetime.utcnow().timestamp())
+    logging.debug(f"Message from client {request.sid} is {data}")
 
-    data_dict["suggestions"] = loopback_suggestions(data_dict["text"])
-    logging.debug(f"Message from client {request.sid} is {data_dict}")
+    data["room"] = request.sid
+    if "timestamps" in data:
+        data["timestamps"].append(datetime.utcnow().timestamp())
+
     if loopback:
-        socketio.emit(out_event, data_dict, room=request.sid)
+        data["suggestions"] = loopback_suggestions(data["text"])
+        socketio.emit(out_event, data, room=request.sid)
     else:
-        producer.send_async(
-            json.dumps(data_dict).encode("utf-8"), msg_received_callback
-        )
+        producer.send_async(json.dumps(data).encode("utf-8"), msg_received_callback)
 
 
 def loopback_suggestions(text):
