@@ -70,19 +70,20 @@ def main():
     print("msg_id, question_text, suggestion_title, score", file=out_file)
 
     seq_id = 0
-    while True:
-        text = input("-->:")
-        message = {
-            "text": text,
-            "stage": "send-request",
-            "timestamps": [datetime.utcnow().timestamp()],
-            "sequence_id": seq_id,
-            "site": "stackoverflow",
-        }
-        sio.emit(out_event, message)
-        seq_id += 1
-
-    out_file.close()
+    try:
+        while True:
+            text = input("-->:")
+            message = {
+                "text": text,
+                "stage": "send-request",
+                "timestamps": [datetime.utcnow().timestamp()],
+                "sequence_id": seq_id,
+                "site": "stackoverflow",
+            }
+            sio.emit(out_event, message)
+            seq_id += 1
+    except KeyboardInterrupt:
+        out_file.close()
 
 
 if __name__ == "__main__":
