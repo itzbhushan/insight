@@ -111,7 +111,9 @@ def find_suggestions(es, in_topic, out_topic, client, args):
             logging.info(f"Using {index} index.")
             response = es.search(index=index, body=es_query)
         except ConnectionTimeout as e:
-            logging.exception("Read timed out. Skipping this read.", str(e))
+            logging.exception(
+                f"Read timed out. Skipping read for index={index}, query={es_query}"
+            )
         else:  # N.B try/else clause.
             packet["total_hits"] = response["hits"]["total"]["value"]
             for hit in response["hits"]["hits"]:
