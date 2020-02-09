@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 import json
 import logging
 import os
+import sys
 
 import findspark
 
@@ -32,10 +33,11 @@ def main():
         choices=index_mapping_types,
     )
     parser.add_argument(
-        "--es-index",
+        "--default-index",
         help="If index type is default, then the name of the default index.",
         default=ES_INDEX,
     )
+    parser.add_argument("--custom-index", nargs=2)
     args = parser.parse_args()
 
     with open(args.mapping) as f:
@@ -60,11 +62,11 @@ def main():
     logging.info(f"ETL-ing {count} documents to elastic search.")
 
     if args.index_type == "default":
-        index = args.es_index
+        index = args.default_index
     else:
+        index_a, index_b = args.custom_index
         df = df.withColumn(
-            "index",
-            when(col("site") == "stackoverflow", "stackoverflow").otherwise("others"),
+            "index", when(col("site") == "stackoverflow", index_a).otherwise(index_b)
         )
         index = "{index}"  # use the index column in dataframe as the index.
 
@@ -73,7 +75,7 @@ def main():
     ).option("es.port", 443).option("es.resource", index).option(
         "es.nodes.wan.only", True
     ).mode(
-        "append"
+        "overwrite"
     ).save()
 
     logging.info("Completed ETL-ing data into elastic search.")
