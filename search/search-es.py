@@ -108,6 +108,7 @@ def find_suggestions(es, in_topic, out_topic, client, args):
             # consumer in the body of the message. If no index is present, use
             # the default index.
             index = packet.get("index", args.index)
+            logging.info(f"Using {index} index.")
             response = es.search(index=index, body=es_query)
         except ConnectionTimeout as e:
             logging.exception("Read timed out. Skipping this read.", str(e))
