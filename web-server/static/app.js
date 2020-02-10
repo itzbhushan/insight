@@ -18,10 +18,15 @@ socket.on('suggestions-list', function(msg) {
 	suggestions = msg["suggestions"]
 	txt = ""
 	i = 0
-	for (const [key, value] of Object.entries(suggestions)) {
+	for (const value of suggestions) {
 		console.log(value["title"])
 		document.getElementById("score-"+i).innerText = value["score"]
 		document.getElementById("title-"+i).innerText = value["title"]
+		i += 1
+	}
+	while ( i < 10 ) {
+		document.getElementById("score-"+i).innerText = ""
+		document.getElementById("title-"+i).innerText = ""
 		i += 1
 	}
 });
