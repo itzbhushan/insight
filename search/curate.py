@@ -61,7 +61,11 @@ def curate(suggestions, site, session):
     for q in results:
         # Retain original score for question with answer_count == 0. Hence +1.
         suggestions[str(q.id)]["score"] *= q.answer_count + 1
-    return suggestions
+
+    ranked_suggestions = sorted(
+        suggestions.values(), key=lambda x: x["score"], reverse=True
+    )
+    return ranked_suggestions
 
 
 def find_suggestions(in_topic, out_topic, client, session):
