@@ -34,7 +34,6 @@ def disconnect():
     print("I'm disconnected!")
 
 
-
 @sio.on(in_event)
 def handle_suggestions(message):
     """
@@ -46,9 +45,13 @@ def handle_suggestions(message):
     logging.info(f"Took {elasped_time} ms. Returned {num_suggestions} suggestions.")
     msg_id = message["sequence_id"]
     text = message["text"]
-    suggestions = message.get("suggestions", {})
-    for suggestion in suggestions.values():
-        print(f"{msg_id}, {text}, {suggestion['title']}, {suggestion['score']}", file=out_file, flush=True)
+    suggestions = message.get("suggestions", [])
+    for suggestion in suggestions:
+        print(
+            f"{msg_id}, {text}, {suggestion['title']}, {suggestion['score']}",
+            file=out_file,
+            flush=True,
+        )
 
 
 def main():
@@ -60,7 +63,6 @@ def main():
 
     sio.connect(url)
     logging.debug(f"My id:", sio.sid)
-
 
     out_file_path = os.path.join(args.out_dir, sio.sid)
     logging.info(f"Saving suggestions to {out_file_path}")
