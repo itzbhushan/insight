@@ -16,9 +16,12 @@ if(e.keyCode == 32){
 socket.on('suggestions-list', function(msg) {
 	console.log("Suggestions list event", msg)
 	suggestions = msg["suggestions"]
+	txt = ""
+	i = 0
 	for (const [key, value] of Object.entries(suggestions)) {
-		title = value["title"]
-		console.log(title)
-		$('#suggestions').val($('#suggestions').val() + title +'\n');
+		console.log(value["title"])
+		document.getElementById("score-"+i).innerText = value["score"]
+		document.getElementById("title-"+i).innerText = value["title"]
+		i += 1
 	}
 });

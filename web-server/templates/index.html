@@ -1,16 +1,79 @@
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>You-complete-Me</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>You-complete-Me</title>
+	<style>
+	table {
+	  font-family: arial, sans-serif;
+	  border-collapse: collapse;
+	  width: 100%;
+	}
+
+	td, th {
+	  border: 1px solid #dddddd;
+	  text-align: left;
+	  padding: 8px;
+	}
+
+	tr:nth-child(even) {
+	  background-color: #dddddd;
+	}
+	</style>
 </head>
-<body>
-Welcome to you-complete-me.
-<br>
-<input id="questions" type="text">
-<br>
-<input id="suggestions" type="text">
-</body>
-<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="/static/app.js"></script>
+	<body>
+		Welcome to you-complete-me.
+		<br>
+		<input id="questions" type="text">
+		<br>
+		<h2 id="table">List of Suggestions</h2>
+		<table>
+		  <tr>
+		    <th>Score</th>
+		    <th>Title</th>
+		  </tr>
+		  <tr id="row-0">
+		    <td id="score-0" value="test">testtt</td>
+		    <td id="title-0"></td>
+		</tr>
+		  <tr id="row-1">
+		    <td id="score-1"></td>
+		    <td id="title-1"></td>
+		  </tr>
+		  <tr id="row-2">
+		    <td id="score-2"></td>
+		    <td id="title-2"></td>
+		  </tr>
+		  <tr id="row-3">
+		    <td id="score-3"></td>
+		    <td id="title-3"></td>
+		  </tr>
+		  <tr id="row-4">
+		    <td id="score-4"></td>
+		    <td id="title-4"></td>
+		  </tr>
+		  <tr id="row-5">
+		    <td id="score-5"></td>
+		    <td id="title-5"></td>
+		  </tr>
+		  <tr id="row-6">
+		    <td id="score-6"></td>
+		    <td id="title-6"></td>
+		  </tr>
+		  <tr id="row-7">
+		    <td id="score-7"></td>
+		    <td id="title-7"></td>
+		  </tr>
+		  <tr id="row-8">
+		    <td id="score-8"></td>
+		    <td id="title-8"></td>
+		  </tr>
+		  <tr id="row-9">
+		    <td id="score-9"></td>
+		    <td id="title-9"></td>
+		  </tr>
+		</table>
+	</body>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="/static/app.js"></script>
 </html>
