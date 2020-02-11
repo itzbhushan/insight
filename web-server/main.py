@@ -74,7 +74,10 @@ def get_suggestions(data):
 
 
 def loopback_suggestions(text):
-    suggestions = {str(i): {"title": text + str(i), "score": i} for i in range(10)}
+    suggestions = [
+        {"title": text + str(i), "score": i, "link": "https://google.com"}
+        for i in range(10)
+    ]
     return suggestions
 
 
