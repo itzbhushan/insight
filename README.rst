@@ -8,8 +8,9 @@ Introduction
 *you-complete-me* is a real time data pipeline for providing suggestions based on
 semantic information to users posting questions in social media platforms.
 
-Slides_.
+Demo_ and Slides_.
 
+.. _Demo: https://www.youtube.com/watch?v=at1oKQ8z4aU
 .. _Slides: https://docs.google.com/presentation/d/1Mul35kcTs_uO0nq-HNzs_09jkEVuctAkxtE7EwbCvIg
 
 Problem Statement
