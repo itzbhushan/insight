@@ -20,10 +20,10 @@ looking for high quality answers to their questions. Hence, these platforms are 
 on maintaining and improving the quality of content hosted in their systems.
 
 So, what is *content*? In this context, content usually takes the form of questions,
-answers, status updates or comments posted by an user. The projected is motivated by
+answers, status updates or comments posted by an user. This project is motivated by
 the hypothesis that content quality can be improved just before a *thought in a
 user's mind* becomes a post. Surfacing high quality real-time suggestions during message
-composition, allows users to ask richer questions which in turn helps other provide
+composition allows users to ask richer questions which in turn helps other provide
 relevant answers.
 
 So, the problem statement is as follows: How do we build a real time data pipeline that
@@ -60,11 +60,11 @@ using Spark and save them in a PostgreSQL database.
 
 The real time pipeline is architected using Apache Pulsar_ as the backbone. User
 queries received by the web-server are published to Pulsar message brokers.
-Consumers listening to the get-suggestions topic receive these messages from the
+Consumers listening to the *get-suggestions* topic receive these messages from the
 broker and query elastic search. Query responses are published
-to the curate topic where a set of curators rank the response based on a simple
+to the *curate* topic where a set of curators rank the response based on a simple
 heuristic. The ranked suggestions are sent back to the user by the
-web-server listening to messages in the suggestions-list topic.
+web-server listening to messages published in the *suggestions-list* topic.
 
 .. image:: real-time-pipeline.png
    :width: 50%
