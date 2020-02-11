@@ -21,3 +21,4 @@ class Questions(Base):
     score = Column("score", Integer)
     user_id = Column("user_id", ForeignKey(Users.user_id))
     answer_count = Column("answer_count", Integer)
+    link = Column("link", String)
