@@ -21,8 +21,8 @@ on maintaining and improving the quality of content hosted in their systems.
 
 So, what is _content_? In this context, content usually takes the form of questions,
 answers, status updates or comments posted by an user. The projected is motivated by
-the hypothesis that content quality can be improved just before a _thought in a
-user's mind_ becomes a post. Surfacing high quality real-time suggestions during message
+the hypothesis that content quality can be improved just before a *thought in a
+user's mind* becomes a post. Surfacing high quality real-time suggestions during message
 composition, allows users to ask richer questions which in turn helps other provide
 relevant answers.
 
