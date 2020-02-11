@@ -21,8 +21,9 @@ socket.on('suggestions-list', function(msg) {
 	for (const value of suggestions) {
 		console.log(value["title"])
 		document.getElementById("score-"+i).innerText = value["score"]
-		document.getElementById("title-"+i).innerText = value["title"]
+		document.getElementById("title-"+i).innerHTML = "<a href='" + value["link"] + "'>" + value["title"] + "</a>"
 		i += 1
+		if (i >= 10) { break;}
 	}
 	while ( i < 10 ) {
 		document.getElementById("score-"+i).innerText = ""
