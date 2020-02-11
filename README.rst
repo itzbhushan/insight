@@ -19,7 +19,7 @@ Social media platforms like Quora, Nextdoor and StackExchange primarily attract 
 looking for high quality answers to their questions. Hence, these platforms are focused
 on maintaining and improving the quality of content hosted in their systems.
 
-So, what is _content_? In this context, content usually takes the form of questions,
+So, what is *content*? In this context, content usually takes the form of questions,
 answers, status updates or comments posted by an user. The projected is motivated by
 the hypothesis that content quality can be improved just before a *thought in a
 user's mind* becomes a post. Surfacing high quality real-time suggestions during message
