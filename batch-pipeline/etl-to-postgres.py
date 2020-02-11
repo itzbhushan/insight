@@ -24,7 +24,15 @@ def etl_into_questions_table(df, db_url, credentials):
     already been created.
     """
 
-    columns = ("id", "creation_date", "score", "owner.user_id", "site", "answer_count")
+    columns = (
+        "id",
+        "creation_date",
+        "score",
+        "owner.user_id",
+        "site",
+        "answer_count",
+        "link",
+    )
     table = "questions"
     question_table_df = df.select(*columns)
     question_table_df = question_table_df.withColumn(
