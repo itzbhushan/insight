@@ -58,8 +58,7 @@ def main():
     # only select a handful of them (columns saved in args.mapping)
     # and index them in elastic search.
     df = df.filter(df.type == "question").select(*columns)
-    count = df.count()
-    logging.info(f"ETL-ing {count} documents to elastic search.")
+    logging.info(f"ETL-ing {df.count()} documents to elastic search.")
 
     if args.index_type == "default":
         index = args.default_index
