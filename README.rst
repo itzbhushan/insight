@@ -65,10 +65,11 @@ using Spark and save them in a PostgreSQL database.
 The real time pipeline is architected using Apache Pulsar_ as the backbone. User
 queries received by the web-server (1) are published to Pulsar message brokers (2).
 Consumers listening to the *get-suggestions* topic receive these messages from the
-broker (4) and query elastic search (5, 6). Query responses are published
-to the *curate* topic (7) where a set of curators rank the response based on a simple
-heuristic (8, 9, and 10). The ranked suggestions are sent back to the user by the
-web-server listening to messages published in the *suggestions-list* topic (11, 12).
+broker (3) and query elastic search (4, 5). Query responses are published
+to the *curate* topic (6) where a group of curators rank the response based on a simple
+heuristic using metadata available in PostgreSQL (7, 8 and 9). The ranked suggestions
+are sent back to the user by the web-server listening to messages published
+in the *suggestions-list* topic (10, 11, and 12).
 
 .. _Pulsar: https://pulsar.apache.org/
 
