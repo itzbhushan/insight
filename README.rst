@@ -43,6 +43,10 @@ Technology stack
 
 The project is composed of two parts, a batch and a real time pipeline.
 
+.. image:: batch-pipeline.png
+   :width: 50%
+   :align: center
+
 The batch pipeline serves as the Extract-Transform-Load (ETL) pipeline.
 The raw data_ is stored in Amazon S3 as a collection of files in the NDJSON_
 format. Using Apache Spark, we extract questions from these input files
@@ -50,26 +54,21 @@ and index them in AWS Elastic Search. We also extract question metadata
 (like creation date, the number of answers and the stackexchange subdomain)
 using Spark and save them in a PostgreSQL database.
 
-.. image:: batch-pipeline.png
-   :width: 50%
-   :align: center
-
 .. _data: https://files.pushshift.io/stackexchange
 
 .. _NDJSON: http://ndjson.org/
 
-
-The real time pipeline is architected using Apache Pulsar_ as the backbone. User
-queries received by the web-server are published to Pulsar message brokers.
-Consumers listening to the *get-suggestions* topic receive these messages from the
-broker and query elastic search. Query responses are published
-to the *curate* topic where a set of curators rank the response based on a simple
-heuristic. The ranked suggestions are sent back to the user by the
-web-server listening to messages published in the *suggestions-list* topic.
-
 .. image:: real-time-pipeline.png
    :width: 50%
    :align: center
+
+The real time pipeline is architected using Apache Pulsar_ as the backbone. User
+queries received by the web-server (1) are published to Pulsar message brokers (2).
+Consumers listening to the *get-suggestions* topic receive these messages from the
+broker (4) and query elastic search (5, 6). Query responses are published
+to the *curate* topic (7) where a set of curators rank the response based on a simple
+heuristic (8, 9, and 10). The ranked suggestions are sent back to the user by the
+web-server listening to messages published in the *suggestions-list* topic (11, 12).
 
 .. _Pulsar: https://pulsar.apache.org/
 
